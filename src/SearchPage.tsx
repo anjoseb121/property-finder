@@ -48,8 +48,9 @@ interface Props {
 }
 
 interface State {
-  searchString: string;
   isLoading: boolean;
+  message: string;
+  searchString: string;
 }
 
 export default class SearchPage extends Component<Props, State> {
@@ -64,8 +65,23 @@ export default class SearchPage extends Component<Props, State> {
     this.onSearchPressed = this.onSearchPressed.bind(this);
 
     this.state = {
+      isLoading: false,
+      message: '',
       searchString: 'london',
-      isLoading: false
+    }
+  }
+
+  private handleResponse(response: any) {
+    this.setState({
+      isLoading: false,
+      message: ''
+    });
+    if (response.application_response_code.substr(0, 1) === '1') {
+      console.log('Properties found ' + response.listings.length);
+    } else {
+      this.setState({
+        message: 'Location not recognized; please try again.'
+      });
     }
   }
 
@@ -74,9 +90,16 @@ export default class SearchPage extends Component<Props, State> {
     this.setState({
       isLoading: true
     });
+    fetch(query)
+      .then((response) => response.json())
+      .then((json) => this.handleResponse(json.response))
+      .catch((error) => this.setState({
+        isLoading: false,
+        message: 'Something bad happened ' + error }
+      ));
   }
 
-  private urlForQueryAndPage(key, value, pageNumber) {
+  private urlForQueryAndPage(key: string, value: string, pageNumber: number) {
     const data: any = {
       country: 'uk',
       pretty: '1',
@@ -105,9 +128,9 @@ export default class SearchPage extends Component<Props, State> {
   }
 
   render() {
-    const spinner = this.state.isLoading ? <ActivityIndicator size="large"/> : null;
+    const spinner = this.state.isLoading ? <ActivityIndicator size="large" /> : null;
 
-    return(
+    return (
       <View style={styles.container}>
         <Text style={styles.description}>
           Search for houses to buy!
@@ -120,16 +143,17 @@ export default class SearchPage extends Component<Props, State> {
             style={styles.searchInput}
             value={this.state.searchString}
             onChange={this.onSearchTextChanged}
-            placeholder="Search via name or postcode"/>
+            placeholder="Search via name or postcode" />
           <Button onPress={this.onSearchPressed}
             color="#48BBEC"
-            title="Go"/>
+            title="Go" />
         </View>
         <Image source={require('../assets/img/house.png')}
-          style={styles.image}/>
+          style={styles.image} />
         {
           spinner
         }
+        <Text style={styles.description}>{this.state.message}</Text>
       </View>
     )
   }
