@@ -42,14 +42,41 @@ const styles = StyleSheet.create({
     width: 217,
     height: 138
   }
-})
+});
 
-export default class SearchPage extends Component<{}> {
+interface Props {
+}
+
+interface State {
+  searchString: string;
+  
+}
+
+export default class SearchPage extends Component<Props, State> {
+
   static navigationOptions = {
     title: 'Property Finder',
   };
 
+  constructor(props: Props) {
+    super(props);
+    this.onSearchTextChanged = this.onSearchTextChanged.bind(this);
+
+    this.state = {
+      searchString: 'london'
+    }
+  }
+
+  private onSearchTextChanged(event: any) {
+    console.log("onSearchTextChanged");
+    this.setState({
+      searchString: event.nativeEvent.text
+    });
+    console.log(`Current: ${this.state.searchString} Next: ${event.nativeEvent.text}`);
+  }
+
   render() {
+    console.log('SearchPage.render')
     return(
       <View style={styles.container}>
         <Text style={styles.description}>
@@ -61,6 +88,8 @@ export default class SearchPage extends Component<{}> {
         <View style={styles.flowRight}>
           <TextInput underlineColorAndroid={'transparent'}
             style={styles.searchInput}
+            value={this.state.searchString}
+            onChange={this.onSearchTextChanged}
             placeholder="Search via name or postcode"/>
           <Button onPress={() => { } }
             color="#48BBEC"
