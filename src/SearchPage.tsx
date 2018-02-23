@@ -49,7 +49,7 @@ interface Props {
 
 interface State {
   searchString: string;
-  
+  isLoading: boolean;
 }
 
 export default class SearchPage extends Component<Props, State> {
@@ -61,22 +61,52 @@ export default class SearchPage extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.onSearchTextChanged = this.onSearchTextChanged.bind(this);
+    this.onSearchPressed = this.onSearchPressed.bind(this);
 
     this.state = {
-      searchString: 'london'
+      searchString: 'london',
+      isLoading: false
     }
   }
 
+  private executeQuery(query: string) {
+    console.log(query)
+    this.setState({
+      isLoading: true
+    });
+  }
+
+  private urlForQueryAndPage(key, value, pageNumber) {
+    const data: any = {
+      country: 'uk',
+      pretty: '1',
+      encoding: 'json',
+      listing_type: 'buy',
+      action: 'search_listings',
+      page: pageNumber,
+    };
+    data[key] = value;
+
+    const queryString = Object.keys(data)
+      .map((key) => key + '=' + encodeURIComponent(data[key]))
+      .join('&');
+    return 'https://api.nestoria.co.uk/api?' + queryString;
+  }
+
+  private onSearchPressed() {
+    const query = this.urlForQueryAndPage('place_name', this.state.searchString, 1);
+    this.executeQuery(query);
+  }
+
   private onSearchTextChanged(event: any) {
-    console.log("onSearchTextChanged");
     this.setState({
       searchString: event.nativeEvent.text
     });
-    console.log(`Current: ${this.state.searchString} Next: ${event.nativeEvent.text}`);
   }
 
   render() {
-    console.log('SearchPage.render')
+    const spinner = this.state.isLoading ? <ActivityIndicator size="large"/> : null;
+
     return(
       <View style={styles.container}>
         <Text style={styles.description}>
@@ -91,12 +121,15 @@ export default class SearchPage extends Component<Props, State> {
             value={this.state.searchString}
             onChange={this.onSearchTextChanged}
             placeholder="Search via name or postcode"/>
-          <Button onPress={() => { } }
+          <Button onPress={this.onSearchPressed}
             color="#48BBEC"
             title="Go"/>
         </View>
         <Image source={require('../assets/img/house.png')}
           style={styles.image}/>
+        {
+          spinner
+        }
       </View>
     )
   }
