@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
 });
 
 interface Props {
+  navigation: any;
 }
 
 interface State {
@@ -77,7 +78,10 @@ export default class SearchPage extends Component<Props, State> {
       message: ''
     });
     if (response.application_response_code.substr(0, 1) === '1') {
-      console.log('Properties found ' + response.listings.length);
+      //console.log('Properties found ' + response.listings.length);
+      this.props.navigation.navigate(
+        'Results', {listings: response.listings}
+      )
     } else {
       this.setState({
         message: 'Location not recognized; please try again.'
